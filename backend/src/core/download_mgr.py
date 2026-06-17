@@ -84,7 +84,7 @@ class DownloadManager:
         try:
             wrapper = YtdlWrapper()
             hook = self._tracker.create_hook(task_id) if self._tracker else None
-            filepath = await asyncio.get_event_loop().run_in_executor(
+            filepath = await asyncio.get_running_loop().run_in_executor(
                 None,
                 lambda: wrapper.download(task.url, task.format_id, "/tmp/youtuber_downloads", hook),
             )

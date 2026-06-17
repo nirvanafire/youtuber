@@ -1,5 +1,4 @@
 # backend/src/main.py
-import sys
 import uvicorn
 from fastapi import FastAPI
 from src.api.router import api_router

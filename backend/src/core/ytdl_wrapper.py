@@ -1,5 +1,6 @@
 import math
 import os
+from collections.abc import Callable
 
 import yt_dlp
 from src.models.video import VideoInfo, FormatInfo, SubtitleInfo
@@ -118,7 +119,7 @@ class YtdlWrapper:
             total_pages=total_pages,
         )
 
-    def download(self, url: str, format_id: str, output_dir: str, progress_hook: callable = None) -> str:
+    def download(self, url: str, format_id: str, output_dir: str, progress_hook: Callable | None = None) -> str:
         opts = self._base_opts()
         opts["format"] = format_id
         opts["outtmpl"] = os.path.join(output_dir, "%(title)s.%(ext)s")
@@ -127,5 +128,5 @@ class YtdlWrapper:
             opts["progress_hooks"] = [progress_hook]
         with yt_dlp.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info)
+            filename = ydl.prepare_filename(info)
         return filename

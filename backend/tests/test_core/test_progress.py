@@ -1,6 +1,5 @@
 # backend/tests/test_core/test_progress.py
 import pytest
-import asyncio
 from unittest.mock import AsyncMock
 from src.core.progress import ProgressTracker
 from src.models.download import DownloadProgress

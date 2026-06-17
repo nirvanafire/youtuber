@@ -1,7 +1,5 @@
 # backend/tests/test_api/test_settings.py
 import pytest
-import tempfile
-import os
 
 
 class TestSettingsEndpoints:

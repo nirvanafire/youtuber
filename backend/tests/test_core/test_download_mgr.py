@@ -1,7 +1,6 @@
 # backend/tests/test_core/test_download_mgr.py
 import pytest
-import asyncio
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import MagicMock, patch
 from src.core.download_mgr import DownloadManager
 from src.models.download import DownloadStatus
 
