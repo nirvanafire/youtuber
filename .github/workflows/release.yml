@@ -28,7 +28,7 @@ jobs:
           cd src/renderer
           npm install
           npm run build
-          cd ..
+          cd ../..
           npx tsc -p tsconfig.json
       - name: Package
         run: |
@@ -63,7 +63,7 @@ jobs:
           cd src/renderer
           npm install
           npm run build
-          cd ..
+          cd ../..
           npx tsc -p tsconfig.json
       - name: Package
         run: |

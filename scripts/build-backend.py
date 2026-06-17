@@ -5,7 +5,9 @@ import os
 import shutil
 
 def main():
-    backend_dir = os.path.join(os.path.dirname(__file__), "..", "backend")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    backend_dir = os.path.join(script_dir, "..", "backend")
+    backend_dir = os.path.normpath(backend_dir)
     spec_file = os.path.join(backend_dir, "youtuber-backend.spec")
     dist_dir = os.path.join(backend_dir, "dist")
     build_dir = os.path.join(backend_dir, "build")
