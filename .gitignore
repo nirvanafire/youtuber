@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
+htmlcov/
+
+# Build outputs
+backend/build/
+backend/dist/
+electron/src/renderer/tsconfig.tsbuildinfo
+
+# Environment
+.env
+.env.local
+
+# Claude Code (user-specific)
+.claude/settings.local.json
