@@ -87,3 +87,72 @@ class TestDownloadManager:
         assert mgr.max_concurrent == 2
         mgr.max_concurrent = 5
         assert mgr.max_concurrent == 5
+
+
+class TestDownloadManagerExecution:
+    @pytest.fixture
+    def mgr(self):
+        return DownloadManager(max_concurrent=2)
+
+    @pytest.mark.asyncio
+    async def test_execute_download_calls_ytdl(self, mgr):
+        from src.core.progress import ProgressTracker
+        tracker = ProgressTracker()
+        mgr.set_progress_tracker(tracker)
+
+        with patch("src.core.download_mgr.YtdlWrapper") as MockWrapper:
+            mock_instance = MagicMock()
+            MockWrapper.return_value = mock_instance
+
+            task = mgr.add_task(
+                url="https://youtube.com/watch?v=dQw4w9WgXcQ",
+                video_id="dQw4w9WgXcQ",
+                title="Test",
+                format_id="22",
+            )
+            await mgr.execute_task(task.id)
+            mock_instance.download.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_updates_status_to_completed(self, mgr):
+        from src.core.progress import ProgressTracker
+        tracker = ProgressTracker()
+        mgr.set_progress_tracker(tracker)
+
+        with patch("src.core.download_mgr.YtdlWrapper") as MockWrapper:
+            mock_instance = MagicMock()
+            mock_instance.download.return_value = "/downloads/test.mp4"
+            MockWrapper.return_value = mock_instance
+
+            task = mgr.add_task(
+                url="https://youtube.com/watch?v=dQw4w9WgXcQ",
+                video_id="dQw4w9WgXcQ",
+                title="Test",
+                format_id="22",
+            )
+            await mgr.execute_task(task.id)
+            updated = mgr.get_task(task.id)
+            assert updated.status == DownloadStatus.COMPLETED
+            assert updated.filepath == "/downloads/test.mp4"
+
+    @pytest.mark.asyncio
+    async def test_execute_handles_failure(self, mgr):
+        from src.core.progress import ProgressTracker
+        tracker = ProgressTracker()
+        mgr.set_progress_tracker(tracker)
+
+        with patch("src.core.download_mgr.YtdlWrapper") as MockWrapper:
+            mock_instance = MagicMock()
+            mock_instance.download.side_effect = Exception("Network error")
+            MockWrapper.return_value = mock_instance
+
+            task = mgr.add_task(
+                url="https://youtube.com/watch?v=dQw4w9WgXcQ",
+                video_id="dQw4w9WgXcQ",
+                title="Test",
+                format_id="22",
+            )
+            await mgr.execute_task(task.id)
+            updated = mgr.get_task(task.id)
+            assert updated.status == DownloadStatus.FAILED
+            assert "Network error" in updated.error
