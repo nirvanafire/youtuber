@@ -15,7 +15,7 @@ import LoadingScreen from "./components/LoadingScreen.vue";
 
 const backendReady = ref(false);
 const loadingMessage = ref("正在初始化...");
-const loadingError = ref<string | null>(null);
+const loadingError = ref<string | undefined>(undefined);
 
 onMounted(() => {
   if (window.electronAPI) {
@@ -41,7 +41,7 @@ onMounted(() => {
 });
 
 function retryConnection() {
-  loadingError.value = null;
+  loadingError.value = undefined;
   loadingMessage.value = "正在重试...";
   window.location.reload();
 }
