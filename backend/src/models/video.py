@@ -5,7 +5,7 @@ class FormatInfo(BaseModel):
     format_id: str
     ext: str
     resolution: str
-    fps: int | None
+    fps: float | None
     vcodec: str
     acodec: str
     filesize: int | None
