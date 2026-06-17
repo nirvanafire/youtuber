@@ -3,8 +3,10 @@ import sys
 import uvicorn
 from fastapi import FastAPI
 from src.api.router import api_router
+from src.core.progress import ProgressTracker
 
 app = FastAPI(title="Youtuber Backend", version="0.1.0")
+app.state.progress_tracker = ProgressTracker()
 app.include_router(api_router)
 
 

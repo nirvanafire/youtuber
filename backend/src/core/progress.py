@@ -9,8 +9,13 @@ ProgressCallback = Callable[[str, DownloadProgress], Awaitable[None]]
 class ProgressTracker:
     def __init__(self):
         self._listeners: list[ProgressCallback] = []
+        self._loop: asyncio.AbstractEventLoop | None = None
 
     def register(self, callback: ProgressCallback) -> None:
+        try:
+            self._loop = asyncio.get_running_loop()
+        except RuntimeError:
+            pass
         self._listeners.append(callback)
 
     def unregister(self, callback: ProgressCallback) -> None:
@@ -22,6 +27,16 @@ class ProgressTracker:
                 await cb(task_id, progress)
             except Exception:
                 pass
+
+    def broadcast_sync(self, task_id: str, progress: DownloadProgress) -> None:
+        """Thread-safe synchronous broadcast for use from sync test clients."""
+        if self._loop and self._loop.is_running():
+            future = asyncio.run_coroutine_threadsafe(
+                self.broadcast(task_id, progress), self._loop
+            )
+            future.result(timeout=5)
+        else:
+            asyncio.run(self.broadcast(task_id, progress))
 
     def create_hook(self, task_id: str) -> Callable:
         def hook(d: dict):
