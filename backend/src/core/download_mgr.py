@@ -53,7 +53,10 @@ class DownloadManager:
 
     def pause_task(self, task_id: str) -> bool:
         task = self._tasks.get(task_id)
-        if not task or task.status != DownloadStatus.DOWNLOADING:
+        if not task or task.status not in (
+            DownloadStatus.DOWNLOADING,
+            DownloadStatus.WAITING,
+        ):
             return False
         task.status = DownloadStatus.PAUSED
         self._active_tasks.discard(task_id)
