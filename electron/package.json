@@ -10,6 +10,10 @@
     "build": "npm run build:renderer && npm run build:main && electron-builder",
     "build:main": "tsc -p tsconfig.json",
     "build:renderer": "cd src/renderer && npm run build",
+    "build:backend": "python scripts/build-backend.py",
+    "build:app": "npm run build:backend && npm run build:renderer && npm run build:main && cd src/renderer && npx electron-builder --config electron-builder.yml",
+    "build:win": "npm run build:app -- --win",
+    "build:mac": "npm run build:app -- --mac",
     "test": "cd src/renderer && npm run test"
   },
   "devDependencies": {
