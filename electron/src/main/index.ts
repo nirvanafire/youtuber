@@ -1,8 +1,10 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow } from "electron";
 import path from "path";
 import { PythonManager } from "./python-manager";
+import { setupIpcHandlers } from "./ipc-handlers";
 
 let mainWindow: BrowserWindow | null = null;
+const pythonManager = new PythonManager();
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -22,12 +24,17 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, "../renderer/dist/index.html"));
   }
 
+  setupIpcHandlers(pythonManager, mainWindow);
+
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  createWindow();
+  await pythonManager.start();
+});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
