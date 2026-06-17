@@ -13,12 +13,14 @@
     "test": "cd src/renderer && npm run test"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
     "concurrently": "^9.0.0",
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0",
     "typescript": "^5.6.0"
   },
   "dependencies": {
-    "vue-i18n": "^11.4.5"
+    "vue-i18n": "^11.4.5",
+    "ws": "^8.21.0"
   }
 }
