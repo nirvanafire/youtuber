@@ -1,3 +1,6 @@
+import os
+import json
+import tempfile
 from src.models.settings import AppSettings
 
 
@@ -41,3 +44,40 @@ class TestAppSettings:
         assert settings.max_concurrent_downloads == 1
         settings = AppSettings(max_concurrent_downloads=10)
         assert settings.max_concurrent_downloads == 10
+
+
+from src.config import SettingsManager
+
+
+class TestSettingsManager:
+    def test_load_defaults_when_no_file(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, "settings.json")
+            mgr = SettingsManager(path)
+            settings = mgr.load()
+            assert settings.default_quality == "best"
+            assert settings.max_concurrent_downloads == 3
+
+    def test_save_and_load(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, "settings.json")
+            mgr = SettingsManager(path)
+            settings = mgr.load()
+            settings.download_dir = "/custom/path"
+            settings.proxy = "http://127.0.0.1:7890"
+            mgr.save(settings)
+
+            loaded = mgr.load()
+            assert loaded.download_dir == "/custom/path"
+            assert loaded.proxy == "http://127.0.0.1:7890"
+
+    def test_update_settings(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, "settings.json")
+            mgr = SettingsManager(path)
+            updated = mgr.update({"default_quality": "1080p", "language": "en"})
+            assert updated.default_quality == "1080p"
+            assert updated.language == "en"
+            # Verify persisted
+            loaded = mgr.load()
+            assert loaded.default_quality == "1080p"
