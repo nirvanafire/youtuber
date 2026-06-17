@@ -3,6 +3,16 @@
     <h2>{{ t('home.title') }}</h2>
     <UrlInput :loading="videoStore.loading" @parse="handleParse" />
     <VideoCard v-if="videoStore.currentVideo" :video="videoStore.currentVideo" />
+    <FormatTable
+      v-if="videoStore.currentVideo"
+      :formats="videoStore.currentVideo.formats"
+      @select="onFormatSelect"
+    />
+    <SubtitleList
+      v-if="videoStore.currentVideo"
+      :subtitles="videoStore.currentVideo.subtitles"
+      @download="onSubtitleDownload"
+    />
     <el-alert
       v-if="videoStore.error"
       :title="videoStore.error"
@@ -21,6 +31,9 @@ import { useVideoStore } from "@/stores/video";
 import { getVideoInfo } from "@/api/video";
 import UrlInput from "@/components/UrlInput.vue";
 import VideoCard from "@/components/VideoCard.vue";
+import FormatTable from "@/components/FormatTable.vue";
+import SubtitleList from "@/components/SubtitleList.vue";
+import type { FormatInfo } from "@/types";
 
 const { t } = useI18n();
 const videoStore = useVideoStore();
@@ -36,5 +49,13 @@ async function handleParse(url: string) {
   } finally {
     videoStore.setLoading(false);
   }
+}
+
+function onFormatSelect(formats: FormatInfo[]) {
+  console.log("Selected formats:", formats);
+}
+
+function onSubtitleDownload(languages: string[]) {
+  console.log("Download subtitles:", languages);
 }
 </script>
