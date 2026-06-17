@@ -32,4 +32,12 @@ client.interceptors.response.use(
   }
 );
 
+export function initApiClient() {
+  if (window.electronAPI) {
+    window.electronAPI.onBackendReady((port: number) => {
+      setBackendPort(port);
+    });
+  }
+}
+
 export default client;
