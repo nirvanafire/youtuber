@@ -1,5 +1,8 @@
+import math
+
 import yt_dlp
 from src.models.video import VideoInfo, FormatInfo, SubtitleInfo
+from src.models.playlist import PlaylistInfo, PlaylistVideoItem
 
 
 class YtdlWrapper:
@@ -78,4 +81,38 @@ class YtdlWrapper:
                 raw.get("subtitles"),
                 raw.get("automatic_captions"),
             ),
+        )
+
+    def extract_playlist(self, url: str, page: int = 1, page_size: int = 50) -> PlaylistInfo:
+        opts = self._base_opts()
+        opts["extract_flat"] = True
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            raw = ydl.extract_info(url, download=False)
+
+        entries = list(raw.get("entries", []))
+        total = len(entries)
+        total_pages = max(1, math.ceil(total / page_size))
+        start = (page - 1) * page_size
+        end = start + page_size
+        page_entries = entries[start:end]
+
+        videos = [
+            PlaylistVideoItem(
+                id=e.get("id", ""),
+                title=e.get("title", ""),
+                duration=e.get("duration"),
+                thumbnail=e.get("thumbnail", ""),
+                url=e.get("webpage_url", e.get("url", "")),
+            )
+            for e in page_entries
+        ]
+
+        return PlaylistInfo(
+            id=raw.get("id", ""),
+            title=raw.get("title", ""),
+            uploader=raw.get("uploader", ""),
+            video_count=total,
+            videos=videos,
+            page=page,
+            total_pages=total_pages,
         )

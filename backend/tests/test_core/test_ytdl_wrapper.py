@@ -1,7 +1,9 @@
+import math
 import pytest
 from unittest.mock import MagicMock, patch
 from src.core.ytdl_wrapper import YtdlWrapper
 from src.models.video import VideoInfo
+from src.models.playlist import PlaylistInfo
 
 
 class TestYtdlWrapperExtractInfo:
@@ -146,3 +148,74 @@ class TestYtdlWrapperExtractInfo:
 
             with pytest.raises(Exception, match="Video unavailable"):
                 wrapper.extract_info("https://youtube.com/watch?v=private")
+
+
+class TestYtdlWrapperExtractPlaylist:
+    @pytest.fixture
+    def wrapper(self):
+        return YtdlWrapper()
+
+    @pytest.fixture
+    def mock_playlist_info(self):
+        return {
+            "id": "PLtest123",
+            "title": "My Playlist",
+            "uploader": "TestUser",
+            "entries": [
+                {
+                    "id": "vid1",
+                    "title": "First Video",
+                    "duration": 60,
+                    "thumbnail": "https://example.com/1.jpg",
+                    "webpage_url": "https://youtube.com/watch?v=vid1",
+                },
+                {
+                    "id": "vid2",
+                    "title": "Second Video",
+                    "duration": 90,
+                    "thumbnail": "https://example.com/2.jpg",
+                    "webpage_url": "https://youtube.com/watch?v=vid2",
+                },
+            ],
+        }
+
+    def test_extract_playlist(self, wrapper, mock_playlist_info):
+        with patch("src.core.ytdl_wrapper.yt_dlp.YoutubeDL") as mock_cls:
+            mock_instance = MagicMock()
+            mock_instance.extract_info.return_value = mock_playlist_info
+            mock_cls.return_value.__enter__ = MagicMock(return_value=mock_instance)
+            mock_cls.return_value.__exit__ = MagicMock(return_value=False)
+
+            info = wrapper.extract_playlist(
+                "https://www.youtube.com/playlist?list=PLtest123",
+                page=1,
+                page_size=50,
+            )
+
+        assert isinstance(info, PlaylistInfo)
+        assert info.id == "PLtest123"
+        assert info.title == "My Playlist"
+        assert info.video_count == 2
+        assert len(info.videos) == 2
+        assert info.page == 1
+
+    def test_extract_playlist_pagination(self, wrapper):
+        entries = [
+            {"id": f"vid{i}", "title": f"V{i}", "duration": 60,
+             "thumbnail": f"https://example.com/{i}.jpg",
+             "webpage_url": f"https://youtube.com/watch?v=vid{i}"}
+            for i in range(100)
+        ]
+        raw = {"id": "PLbig", "title": "Big", "uploader": "User", "entries": entries}
+
+        with patch("src.core.ytdl_wrapper.yt_dlp.YoutubeDL") as mock_cls:
+            mock_instance = MagicMock()
+            mock_instance.extract_info.return_value = raw
+            mock_cls.return_value.__enter__ = MagicMock(return_value=mock_instance)
+            mock_cls.return_value.__exit__ = MagicMock(return_value=False)
+
+            page1 = wrapper.extract_playlist("https://youtube.com/playlist?list=PLbig", page=1, page_size=50)
+
+        assert page1.total_pages == 2
+        assert len(page1.videos) == 50
+        assert page1.page == 1
