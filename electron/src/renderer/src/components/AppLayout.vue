@@ -13,15 +13,15 @@
       >
         <el-menu-item index="/">
           <el-icon><VideoPlay /></el-icon>
-          <span>视频解析</span>
+          <span>{{ t('nav.home') }}</span>
         </el-menu-item>
         <el-menu-item index="/downloads">
           <el-icon><Download /></el-icon>
-          <span>下载管理</span>
+          <span>{{ t('nav.downloads') }}</span>
         </el-menu-item>
         <el-menu-item index="/settings">
           <el-icon><Setting /></el-icon>
-          <span>设置</span>
+          <span>{{ t('nav.settings') }}</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -34,8 +34,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { VideoPlay, Download, Setting } from "@element-plus/icons-vue";
 
+const { t } = useI18n();
 const route = useRoute();
 const activeMenu = computed(() => route.path);
 </script>

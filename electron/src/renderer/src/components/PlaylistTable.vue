@@ -1,25 +1,25 @@
 <template>
   <div style="margin-top: 16px">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px">
-      <h3>{{ playlist.title }} ({{ playlist.video_count }} 个视频)</h3>
+      <h3>{{ playlist.title }} ({{ playlist.video_count }} {{ t('playlist.videoCount') }})</h3>
       <div>
         <el-button size="small" @click="toggleAll">
-          {{ allSelected ? '取消全选' : '全选' }}
+          {{ allSelected ? t('playlist.deselectAll') : t('playlist.selectAll') }}
         </el-button>
         <el-button type="primary" size="small" :disabled="selectedIds.size === 0" @click="onBatchDownload">
-          下载选中 ({{ selectedIds.size }})
+          {{ t('playlist.downloadSelected') }} ({{ selectedIds.size }})
         </el-button>
       </div>
     </div>
     <el-table ref="tableRef" :data="playlist.videos" stripe style="width: 100%" @selection-change="onSelectionChange">
       <el-table-column type="selection" width="55" />
-      <el-table-column label="缩略图" width="120">
+      <el-table-column :label="t('playlist.thumbnail')" width="120">
         <template #default="{ row }">
           <img :src="row.thumbnail" :alt="row.title" style="width: 100px; height: 56px; object-fit: cover; border-radius: 4px" />
         </template>
       </el-table-column>
-      <el-table-column prop="title" label="标题" />
-      <el-table-column label="时长" width="100">
+      <el-table-column prop="title" :label="t('playlist.title')" />
+      <el-table-column :label="t('playlist.duration')" width="100">
         <template #default="{ row }">
           {{ row.duration ? formatDuration(row.duration) : '-' }}
         </template>
@@ -39,8 +39,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import type { TableInstance } from "element-plus";
 import type { PlaylistInfo, PlaylistVideoItem } from "@/types";
+
+const { t } = useI18n();
 
 const props = defineProps<{ playlist: PlaylistInfo }>();
 const emit = defineEmits<{
