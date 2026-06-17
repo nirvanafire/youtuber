@@ -64,7 +64,7 @@ async function handleParse(url: string) {
       videoStore.setVideo(info);
     }
   } catch (e: any) {
-    videoStore.setError(e.message || "解析失败");
+    videoStore.setError(e.message || t('home.parseFailed'));
   } finally {
     videoStore.setLoading(false);
   }
@@ -89,7 +89,7 @@ async function onPlaylistPageChange(page: number) {
     const info = await getPlaylistInfo(playlistUrl.value, page);
     videoStore.setPlaylist(info);
   } catch (e: any) {
-    videoStore.setError(e.message || "加载分页失败");
+    videoStore.setError(e.message || t('home.loadPageFailed'));
   } finally {
     videoStore.setLoading(false);
   }

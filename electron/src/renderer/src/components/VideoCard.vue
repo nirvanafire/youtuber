@@ -12,7 +12,7 @@
           {{ video.uploader }} · {{ formatDuration(video.duration) }}
         </p>
         <p style="color: #909399; margin: 0; font-size: 12px">
-          {{ video.formats.length }} 个格式 · {{ video.subtitles.length }} 个字幕
+          {{ video.formats.length }} {{ t('video.formats') }} · {{ video.subtitles.length }} {{ t('video.subtitles') }}
         </p>
       </div>
     </div>
@@ -20,8 +20,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 import type { VideoInfo } from "@/types";
 
+const { t } = useI18n();
 defineProps<{ video: VideoInfo }>();
 
 function formatDuration(seconds: number): string {

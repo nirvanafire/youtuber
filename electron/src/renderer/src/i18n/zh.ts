@@ -9,6 +9,8 @@ export default {
     urlPlaceholder: "请输入 YouTube 视频/播放列表/频道 URL",
     parse: "解析",
     parsing: "解析中...",
+    parseFailed: "解析失败",
+    loadPageFailed: "加载分页失败",
   },
   download: {
     title: "下载管理",
@@ -59,10 +61,17 @@ export default {
     title: "设置",
     downloadDir: "下载目录",
     defaultQuality: "默认画质",
+    qualityBest: "最高画质",
+    audioOnly: "仅音频",
     proxy: "代理设置",
     maxConcurrent: "最大并发下载数",
     language: "语言",
     save: "保存",
     saved: "设置已保存",
+    saveFailed: "保存失败",
+  },
+  video: {
+    formats: "个格式",
+    subtitles: "个字幕",
   },
 };

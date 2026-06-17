@@ -9,6 +9,8 @@ export default {
     urlPlaceholder: "Enter YouTube video/playlist/channel URL",
     parse: "Parse",
     parsing: "Parsing...",
+    parseFailed: "Parse failed",
+    loadPageFailed: "Failed to load page",
   },
   download: {
     title: "Downloads",
@@ -59,10 +61,17 @@ export default {
     title: "Settings",
     downloadDir: "Download Directory",
     defaultQuality: "Default Quality",
+    qualityBest: "Best Quality",
+    audioOnly: "Audio Only",
     proxy: "Proxy",
     maxConcurrent: "Max Concurrent Downloads",
     language: "Language",
     save: "Save",
     saved: "Settings saved",
+    saveFailed: "Save failed",
+  },
+  video: {
+    formats: "formats",
+    subtitles: "subtitles",
   },
 };

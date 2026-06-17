@@ -7,10 +7,10 @@
       </el-form-item>
       <el-form-item :label="t('settings.defaultQuality')">
         <el-select v-model="form.default_quality" style="width: 100%">
-          <el-option label="最高画质" value="best" />
+          <el-option :label="t('settings.qualityBest')" value="best" />
           <el-option label="1080p" value="1080p" />
           <el-option label="720p" value="720p" />
-          <el-option label="仅音频" value="audio" />
+          <el-option :label="t('settings.audioOnly')" value="audio" />
         </el-select>
       </el-form-item>
       <el-form-item :label="t('settings.proxy')">
@@ -70,7 +70,7 @@ async function onSave() {
     locale.value = updated.language;
     ElMessage.success(t('settings.saved'));
   } catch (e: any) {
-    ElMessage.error(e.message || "保存失败");
+    ElMessage.error(e.message || t('settings.saveFailed'));
   }
 }
 </script>
