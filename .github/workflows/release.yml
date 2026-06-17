@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build backend
+        run: |
+          cd backend
+          pip install -r requirements.txt pyinstaller
+          python ../scripts/build-backend.py
+      - name: Build frontend
+        run: |
+          cd electron
+          npm install
+          cd src/renderer
+          npm install
+          npm run build
+          cd ..
+          npx tsc -p tsconfig.json
+      - name: Package
+        run: |
+          cd electron/src/renderer
+          npx electron-builder --win --config electron-builder.yml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: electron/src/renderer/release/*.{exe,msi}
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build backend
+        run: |
+          cd backend
+          pip install -r requirements.txt pyinstaller
+          python ../scripts/build-backend.py
+      - name: Build frontend
+        run: |
+          cd electron
+          npm install
+          cd src/renderer
+          npm install
+          npm run build
+          cd ..
+          npx tsc -p tsconfig.json
+      - name: Package
+        run: |
+          cd electron/src/renderer
+          npx electron-builder --mac --config electron-builder.yml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: electron/src/renderer/release/*.dmg
+
+  release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/windows/*
+            artifacts/macos/*
+          generate_release_notes: true

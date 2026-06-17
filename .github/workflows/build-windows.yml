@@ -1,0 +1,63 @@
+name: Build Windows
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Python dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Python backend
+        run: python scripts/build-backend.py
+
+      - name: Install frontend dependencies
+        run: |
+          cd electron
+          npm install
+          cd src/renderer
+          npm install
+
+      - name: Build frontend
+        run: |
+          cd electron/src/renderer
+          npm run build
+          cd ..
+          npx tsc -p tsconfig.json
+
+      - name: Build Electron app
+        run: |
+          cd electron/src/renderer
+          npx electron-builder --win --config electron-builder.yml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            electron/src/renderer/release/*.exe
+            electron/src/renderer/release/*.msi
+          retention-days: 7
