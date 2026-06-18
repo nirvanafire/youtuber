@@ -4,6 +4,7 @@ directories:
   output: release
   buildResources: src/renderer/build
 files:
+  - dist/main/**/*
   - src/renderer/dist/**/*
   - "!node_modules/**/*"
 extraResources:
