@@ -2,6 +2,7 @@
   "name": "youtuber",
   "version": "0.1.0",
   "description": "YouTube Video Downloader",
+  "repository": "github:nirvanafire/youtuber",
   "main": "dist/main/index.js",
   "scripts": {
     "dev": "concurrently \"npm run dev:main\" \"npm run dev:renderer\"",
