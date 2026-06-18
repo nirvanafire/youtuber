@@ -38,11 +38,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: List release files
         shell: bash
-        run: ls -la electron/release/ || echo "No release directory"
+        run: find electron/release -maxdepth 1 -type f
       - uses: actions/upload-artifact@v4
         with:
-          name: windows
-          path: electron/release/
+          name: windows-installer
+          path: |
+            electron/release/*.exe
+            electron/release/*.msi
 
   build-macos:
     runs-on: macos-latest
@@ -75,11 +77,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: List release files
-        run: ls -la electron/release/ || echo "No release directory"
+        run: find electron/release -maxdepth 1 -type f
       - uses: actions/upload-artifact@v4
         with:
-          name: macos
-          path: electron/release/
+          name: macos-installer
+          path: electron/release/*.dmg
 
   release:
     needs: [build-windows, build-macos]
@@ -91,9 +93,12 @@ jobs:
         with:
           path: artifacts
       - name: List downloaded artifacts
-        run: find artifacts -type f | head -50
+        run: find artifacts -type f
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*
+          files: |
+            artifacts/**/*.exe
+            artifacts/**/*.msi
+            artifacts/**/*.dmg
           generate_release_notes: true
