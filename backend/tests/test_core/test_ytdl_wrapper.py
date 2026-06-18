@@ -219,3 +219,44 @@ class TestYtdlWrapperExtractPlaylist:
         assert page1.total_pages == 2
         assert len(page1.videos) == 50
         assert page1.page == 1
+
+
+class TestYtdlWrapperSubtitleDownload:
+    def test_download_with_subtitle_lang(self):
+        wrapper = YtdlWrapper()
+        with patch("src.core.ytdl_wrapper.yt_dlp.YoutubeDL") as MockYDL:
+            mock_instance = MagicMock()
+            MockYDL.return_value.__enter__ = MagicMock(return_value=mock_instance)
+            MockYDL.return_value.__exit__ = MagicMock(return_value=False)
+            mock_instance.extract_info.return_value = {"title": "test", "ext": "mp4"}
+            mock_instance.prepare_filename.return_value = "/tmp/test.mp4"
+
+            wrapper.download(
+                url="https://youtube.com/watch?v=test",
+                format_id="22",
+                output_dir="/tmp",
+                subtitle_lang="en",
+            )
+
+            # Verify subtitle options were set
+            call_opts = MockYDL.call_args[0][0]
+            assert call_opts["writesubtitles"] is True
+            assert call_opts["subtitleslangs"] == ["en"]
+
+    def test_download_without_subtitle_lang(self):
+        wrapper = YtdlWrapper()
+        with patch("src.core.ytdl_wrapper.yt_dlp.YoutubeDL") as MockYDL:
+            mock_instance = MagicMock()
+            MockYDL.return_value.__enter__ = MagicMock(return_value=mock_instance)
+            MockYDL.return_value.__exit__ = MagicMock(return_value=False)
+            mock_instance.extract_info.return_value = {"title": "test", "ext": "mp4"}
+            mock_instance.prepare_filename.return_value = "/tmp/test.mp4"
+
+            wrapper.download(
+                url="https://youtube.com/watch?v=test",
+                format_id="22",
+                output_dir="/tmp",
+            )
+
+            call_opts = MockYDL.call_args[0][0]
+            assert "writesubtitles" not in call_opts
