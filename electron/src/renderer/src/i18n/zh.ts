@@ -27,6 +27,10 @@ export default {
     speed: "速度",
     eta: "剩余时间",
     noDownloads: "暂无下载任务",
+    taskAdded: "下载任务已添加",
+    subtitleAdded: "字幕下载已添加",
+    playlistAdded: "播放列表下载已添加",
+    startFailed: "下载失败",
   },
   format: {
     title: "可用格式",
@@ -40,6 +44,9 @@ export default {
     audioOnly: "仅音频",
     merged: "合并",
     unknown: "未知",
+    action: "操作",
+    download: "下载",
+    searchPlaceholder: "搜索格式...",
   },
   subtitle: {
     title: "可用字幕",
@@ -47,6 +54,7 @@ export default {
     manual: "手动",
     downloadSelected: "下载选中字幕",
     empty: "无可用字幕",
+    searchPlaceholder: "搜索字幕...",
   },
   playlist: {
     videoCount: "个视频",
@@ -56,6 +64,7 @@ export default {
     thumbnail: "缩略图",
     title: "标题",
     duration: "时长",
+    searchPlaceholder: "搜索视频...",
   },
   settings: {
     title: "设置",

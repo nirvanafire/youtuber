@@ -27,6 +27,10 @@ export default {
     speed: "Speed",
     eta: "ETA",
     noDownloads: "No download tasks",
+    taskAdded: "Download task added",
+    subtitleAdded: "Subtitle downloads added",
+    playlistAdded: "Playlist downloads added",
+    startFailed: "Download failed",
   },
   format: {
     title: "Available Formats",
@@ -40,6 +44,9 @@ export default {
     audioOnly: "Audio Only",
     merged: "Merged",
     unknown: "Unknown",
+    action: "Action",
+    download: "Download",
+    searchPlaceholder: "Search formats...",
   },
   subtitle: {
     title: "Available Subtitles",
@@ -47,6 +54,7 @@ export default {
     manual: "Manual",
     downloadSelected: "Download Selected",
     empty: "No available subtitles",
+    searchPlaceholder: "Search subtitles...",
   },
   playlist: {
     videoCount: "videos",
@@ -56,6 +64,7 @@ export default {
     thumbnail: "Thumbnail",
     title: "Title",
     duration: "Duration",
+    searchPlaceholder: "Search videos...",
   },
   settings: {
     title: "Settings",

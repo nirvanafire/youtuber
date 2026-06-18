@@ -16,6 +16,23 @@ export async function startDownload(
   return data;
 }
 
+export async function startSubtitleDownload(
+  url: string,
+  videoId: string,
+  title: string,
+  language: string,
+  ext: string
+): Promise<DownloadTask> {
+  const { data } = await client.post("/api/v1/download/subtitle", {
+    url,
+    video_id: videoId,
+    title,
+    language,
+    ext,
+  });
+  return data;
+}
+
 export async function getDownloadQueue(): Promise<DownloadTask[]> {
   const { data } = await client.get("/api/v1/download/queue");
   return data;
