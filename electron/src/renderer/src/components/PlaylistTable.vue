@@ -11,7 +11,14 @@
         </el-button>
       </div>
     </div>
-    <el-table ref="tableRef" :data="playlist.videos" stripe style="width: 100%" @selection-change="onSelectionChange">
+    <el-input
+      v-model="searchText"
+      :placeholder="t('playlist.searchPlaceholder')"
+      clearable
+      size="small"
+      style="margin-bottom: 12px; width: 250px"
+    />
+    <el-table ref="tableRef" :data="filteredVideos" stripe style="width: 100%" @selection-change="onSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column :label="t('playlist.thumbnail')" width="120">
         <template #default="{ row }">
@@ -55,6 +62,14 @@ const tableRef = ref<TableInstance>();
 const selectedItems = ref<PlaylistVideoItem[]>([]);
 const selectedIds = computed(() => new Set(selectedItems.value.map((v) => v.id)));
 const allSelected = computed(() => selectedIds.value.size === props.playlist.videos.length && props.playlist.videos.length > 0);
+
+const searchText = ref("");
+
+const filteredVideos = computed(() => {
+  if (!searchText.value.trim()) return props.playlist.videos;
+  const q = searchText.value.toLowerCase();
+  return props.playlist.videos.filter((v) => v.title.toLowerCase().includes(q));
+});
 
 function onSelectionChange(items: PlaylistVideoItem[]) {
   selectedItems.value = items;
