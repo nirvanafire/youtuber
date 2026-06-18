@@ -37,6 +37,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: List release files
+        shell: bash
         run: ls -la electron/release/ || echo "No release directory"
       - uses: actions/upload-artifact@v4
         with:
