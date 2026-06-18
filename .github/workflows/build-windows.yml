@@ -45,7 +45,7 @@ jobs:
 
       - name: Build Electron app
         run: |
-          cd electron/src/renderer
+          cd electron
           npx electron-builder --win --config electron-builder.yml
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,6 +55,6 @@ jobs:
         with:
           name: windows-build
           path: |
-            electron/src/renderer/release/*.exe
-            electron/src/renderer/release/*.msi
+            electron/release/*.exe
+            electron/release/*.msi
           retention-days: 7

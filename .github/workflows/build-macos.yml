@@ -45,7 +45,7 @@ jobs:
 
       - name: Build Electron app
         run: |
-          cd electron/src/renderer
+          cd electron
           npx electron-builder --mac --config electron-builder.yml
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,5 +55,5 @@ jobs:
         with:
           name: macos-build
           path: |
-            electron/src/renderer/release/*.dmg
+            electron/release/*.dmg
           retention-days: 7

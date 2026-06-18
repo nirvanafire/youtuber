@@ -32,14 +32,14 @@ jobs:
           npx tsc -p tsconfig.json
       - name: Package
         run: |
-          cd electron/src/renderer
+          cd electron
           npx electron-builder --win --config electron-builder.yml
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: electron/src/renderer/release/*.{exe,msi}
+          path: electron/release/*.{exe,msi}
 
   build-macos:
     runs-on: macos-latest
@@ -67,14 +67,14 @@ jobs:
           npx tsc -p tsconfig.json
       - name: Package
         run: |
-          cd electron/src/renderer
+          cd electron
           npx electron-builder --mac --config electron-builder.yml
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
         with:
           name: macos
-          path: electron/src/renderer/release/*.dmg
+          path: electron/release/*.dmg
 
   release:
     needs: [build-windows, build-macos]

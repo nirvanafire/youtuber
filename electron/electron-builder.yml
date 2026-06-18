@@ -2,16 +2,16 @@ appId: com.youtuber.app
 productName: Youtuber
 directories:
   output: release
-  buildResources: build
+  buildResources: src/renderer/build
 files:
-  - dist/**/*
+  - src/renderer/dist/**/*
   - "!node_modules/**/*"
 extraResources:
-  - from: "../../backend/dist/youtuber-backend"
+  - from: "../backend/dist/youtuber-backend"
     to: "backend/youtuber-backend"
-  - from: "../../backend/src/main.py"
+  - from: "../backend/src/main.py"
     to: "backend/main.py"
-  - from: "../../backend/src/"
+  - from: "../backend/src/"
     to: "backend/src/"
 win:
   target:
@@ -19,20 +19,20 @@ win:
       arch: [x64]
     - target: msi
       arch: [x64]
-  icon: build/icon.ico
+  icon: src/renderer/build/icon.ico
 mac:
   target:
     - target: dmg
       arch: [x64, arm64]
-  icon: build/icon.icns
+  icon: src/renderer/build/icon.icns
   category: public.app-category.utilities
 nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
-  installerIcon: build/icon.ico
-  uninstallerIcon: build/icon.ico
-  installerHeaderIcon: build/icon.ico
+  installerIcon: src/renderer/build/icon.ico
+  uninstallerIcon: src/renderer/build/icon.ico
+  installerHeaderIcon: src/renderer/build/icon.ico
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: Youtuber

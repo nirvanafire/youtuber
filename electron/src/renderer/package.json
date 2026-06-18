@@ -2,6 +2,8 @@
   "name": "youtuber-renderer",
   "private": true,
   "version": "0.1.0",
+  "description": "YouTube Video Downloader",
+  "author": "nirvanafire",
   "type": "module",
   "scripts": {
     "dev": "vite",
