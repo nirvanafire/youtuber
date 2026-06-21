@@ -41,6 +41,7 @@ class DownloadManager:
             status=DownloadStatus.WAITING,
         )
         self._tasks[task.id] = task
+        logger.info(f"[add_task] task created: id={task.id}, url={url}, format_id={format_id}, status={task.status}")
         self._schedule_next()
         return task
 
@@ -94,29 +95,41 @@ class DownloadManager:
 
     def _schedule_next(self) -> None:
         if not self._auto_schedule:
+            logger.info("[_schedule_next] auto_schedule is False, skipping")
             return
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
+            logger.warning("[_schedule_next] no running event loop, cannot schedule")
             return
+        active = len(self._active_tasks)
+        logger.info(f"[_schedule_next] active={active}, max_concurrent={self._max_concurrent}")
         while len(self._active_tasks) < self._max_concurrent:
             waiting = [
                 t for t in self._tasks.values()
                 if t.status == DownloadStatus.WAITING and t.id not in self._active_tasks
             ]
             if not waiting:
+                logger.info("[_schedule_next] no waiting tasks")
                 break
             task = waiting[0]
+            logger.info(f"[_schedule_next] scheduling task {task.id} ({task.title})")
             loop.create_task(self.execute_task(task.id))
 
     def _should_abort(self, task_id: str) -> bool:
         return task_id in self._interrupt_tasks
 
     async def execute_task(self, task_id: str) -> None:
+        logger.info(f"[execute_task] called for task_id={task_id}")
         task = self._tasks.get(task_id)
-        if not task or task.status != DownloadStatus.WAITING:
+        if not task:
+            logger.warning(f"[execute_task] task {task_id} not found")
+            return
+        if task.status != DownloadStatus.WAITING:
+            logger.warning(f"[execute_task] task {task_id} status is {task.status}, not WAITING, skipping")
             return
         task.status = DownloadStatus.DOWNLOADING
+        logger.info(f"[execute_task] task {task_id} status -> DOWNLOADING")
         self._active_tasks.add(task_id)
         try:
             settings = _settings_mgr.load()

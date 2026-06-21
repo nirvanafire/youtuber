@@ -1,7 +1,10 @@
 # backend/src/api/download.py
+import logging
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from src.core.download_mgr import DownloadManager
+
+logger = logging.getLogger("youtuber.download_api")
 
 router = APIRouter()
 _manager = DownloadManager()
@@ -33,6 +36,7 @@ def _ensure_tracker(request: Request) -> None:
 
 @router.post("/download")
 async def start_download(req: DownloadRequest, request: Request):
+    logger.info(f"[start_download] received request: url={req.url}, video_id={req.video_id}, title={req.title}, format_id={req.format_id}")
     _ensure_tracker(request)
     task = _manager.add_task(
         url=req.url,
@@ -40,6 +44,7 @@ async def start_download(req: DownloadRequest, request: Request):
         title=req.title,
         format_id=req.format_id,
     )
+    logger.info(f"[start_download] task created: id={task.id}, status={task.status}")
     return task.model_dump()
 
 

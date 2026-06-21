@@ -7,12 +7,14 @@ export async function startDownload(
   title: string,
   formatId: string
 ): Promise<DownloadTask> {
+  console.log("[startDownload] requesting:", { url, video_id: videoId, title, format_id: formatId });
   const { data } = await client.post("/api/v1/download", {
     url,
     video_id: videoId,
     title,
     format_id: formatId,
   });
+  console.log("[startDownload] response:", data);
   return data;
 }
 

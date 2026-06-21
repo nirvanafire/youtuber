@@ -76,12 +76,24 @@ async function handleParse(url: string) {
 
 async function onFormatDownload(format: FormatInfo) {
   const video = videoStore.currentVideo;
-  if (!video) return;
+  if (!video) {
+    console.warn("[onFormatDownload] no currentVideo, aborting");
+    return;
+  }
+  console.log("[onFormatDownload] starting download:", {
+    url: video.webpage_url,
+    videoId: video.id,
+    title: video.title,
+    formatId: format.format_id,
+    formatNote: format.format_note,
+  });
   try {
     const task = await startDownload(video.webpage_url, video.id, video.title, format.format_id);
+    console.log("[onFormatDownload] task created:", task);
     downloadStore.addTask(task);
     ElMessage.success(`${t('download.taskAdded')}: ${video.title} (${format.format_note})`);
   } catch (e: any) {
+    console.error("[onFormatDownload] failed:", e);
     ElMessage.error(e.message || t('download.startFailed'));
   }
 }
