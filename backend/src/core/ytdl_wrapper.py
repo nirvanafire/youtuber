@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+import shutil
 from collections.abc import Callable
 
 import yt_dlp
@@ -171,13 +172,20 @@ class YtdlWrapper:
     ) -> str:
         logger.info(f"download: url={url}, format_id={format_id}, output_dir={output_dir}, subtitle_lang={subtitle_lang}")
         opts = self._base_opts()
-        # For video-only formats, merge with best audio to ensure audio track
+
+        has_ffmpeg = shutil.which("ffmpeg") is not None
         if format_id.startswith("subtitle:"):
             opts["format"] = "best"
-        else:
+        elif has_ffmpeg:
+            # Merge selected video format with best audio
             opts["format"] = f"{format_id}+bestaudio/best"
+            opts["merge_output_format"] = "mp4"
+        else:
+            # No ffmpeg: fall back to best single format (has audio built-in)
+            logger.warning("ffmpeg not found, falling back to 'best' format (audio+video combined)")
+            opts["format"] = "best"
+
         opts["outtmpl"] = os.path.join(output_dir, "%(title)s.%(ext)s")
-        opts["merge_output_format"] = "mp4"
         opts.pop("skip_download", None)
 
         if subtitle_lang:
