@@ -171,8 +171,13 @@ class YtdlWrapper:
     ) -> str:
         logger.info(f"download: url={url}, format_id={format_id}, output_dir={output_dir}, subtitle_lang={subtitle_lang}")
         opts = self._base_opts()
-        opts["format"] = format_id
+        # For video-only formats, merge with best audio to ensure audio track
+        if format_id.startswith("subtitle:"):
+            opts["format"] = "best"
+        else:
+            opts["format"] = f"{format_id}+bestaudio/best"
         opts["outtmpl"] = os.path.join(output_dir, "%(title)s.%(ext)s")
+        opts["merge_output_format"] = "mp4"
         opts.pop("skip_download", None)
 
         if subtitle_lang:
