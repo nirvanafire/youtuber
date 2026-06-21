@@ -145,7 +145,7 @@ class YtdlWrapper:
                 title=e.get("title", ""),
                 duration=e.get("duration"),
                 thumbnail=e.get("thumbnail", ""),
-                url=e.get("webpage_url", e.get("url", "")),
+                url=e.get("webpage_url") or e.get("url") or f"https://www.youtube.com/watch?v={e.get('id', '')}",
             )
             for e in page_entries
         ]
