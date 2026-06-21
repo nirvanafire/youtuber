@@ -14,10 +14,10 @@ class DownloadStatus(str, Enum):
 
 class DownloadProgress(BaseModel):
     percent: float
-    speed: int
-    downloaded_bytes: int
-    total_bytes: int | None
-    eta: int | None
+    speed: float
+    downloaded_bytes: float
+    total_bytes: float | None
+    eta: float | None
 
 
 class DownloadTask(BaseModel):
