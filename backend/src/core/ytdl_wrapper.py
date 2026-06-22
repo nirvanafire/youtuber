@@ -19,11 +19,31 @@ class YtdlWrapper:
     def __init__(self, proxy: str | None = None):
         self._proxy = proxy
 
+    _ffmpeg_dir: str | None = None
+
+    @classmethod
+    def _ensure_ffmpeg(cls) -> str | None:
+        if cls._ffmpeg_dir:
+            return cls._ffmpeg_dir
+        try:
+            ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
+            if not ffmpeg_path or not os.path.isfile(ffmpeg_path):
+                return None
+            ffmpeg_dir = os.path.dirname(ffmpeg_path)
+            target = os.path.join(ffmpeg_dir, "ffmpeg.exe")
+            if not os.path.exists(target):
+                import shutil
+                shutil.copy2(ffmpeg_path, target)
+            cls._ffmpeg_dir = ffmpeg_dir
+            return ffmpeg_dir
+        except Exception:
+            return None
+
     def _base_opts(self) -> dict:
         opts = {"quiet": True, "no_warnings": True, "skip_download": True}
-        ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
-        if ffmpeg_path:
-            opts["ffmpeg_location"] = os.path.dirname(ffmpeg_path)
+        ffmpeg_dir = self._ensure_ffmpeg()
+        if ffmpeg_dir:
+            opts["ffmpeg_location"] = ffmpeg_dir
         if self._proxy:
             opts["proxy"] = self._proxy
         return opts
