@@ -28,6 +28,13 @@ class ProgressTracker:
             except Exception:
                 pass
 
+    async def broadcast_status(self, task_id: str, status: str, **extra) -> None:
+        for cb in self._listeners[:]:
+            try:
+                await cb(task_id, status, extra)
+            except Exception:
+                pass
+
     def broadcast_sync(self, task_id: str, progress: DownloadProgress) -> None:
         """Thread-safe synchronous broadcast for use from sync test clients."""
         if self._loop and self._loop.is_running():

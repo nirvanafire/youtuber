@@ -1,24 +1,30 @@
 import { ipcMain, BrowserWindow } from "electron";
 import { PythonManager } from "./python-manager";
 
+let _proxyPort: number | null = null;
+
+export function setProxyPort(port: number) {
+  _proxyPort = port;
+}
+
 export function setupIpcHandlers(pythonManager: PythonManager, mainWindow: BrowserWindow) {
   ipcMain.handle("get-backend-port", () => {
-    const state = pythonManager.getState();
-    return state.port;
+    return _proxyPort ?? null;
   });
 
   ipcMain.handle("get-python-state", () => {
     const state = pythonManager.getState();
     return {
-      port: state.port,
+      port: _proxyPort ?? state.port,
       pythonPath: state.pythonPath,
       isEmbedded: state.isEmbedded,
       ready: state.ready,
     };
   });
 
-  pythonManager.onReady((port) => {
-    mainWindow.webContents.send("backend-ready", port);
+  pythonManager.onReady((backendPort) => {
+    // proxyPort is set by index.ts before this callback fires
+    mainWindow.webContents.send("backend-ready", _proxyPort ?? backendPort);
   });
 
   pythonManager.onError((error) => {

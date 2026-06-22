@@ -1,5 +1,6 @@
 import { spawn, execFile, ChildProcess } from "child_process";
 import path from "path";
+import log from "./logger";
 
 const PYTHON_COMMANDS = ["python3", "python", "py"];
 const MIN_PYTHON_VERSION = [3, 10];
@@ -24,15 +25,15 @@ export class PythonManager {
     ready: false,
   };
   private restartCount = 0;
-  private onReadyCallback: ((port: number) => void) | null = null;
-  private onErrorCallback: ((error: string) => void) | null = null;
+  private onReadyCallbacks: ((port: number) => void)[] = [];
+  private onErrorCallbacks: ((error: string) => void)[] = [];
 
   onReady(callback: (port: number) => void) {
-    this.onReadyCallback = callback;
+    this.onReadyCallbacks.push(callback);
   }
 
   onError(callback: (error: string) => void) {
-    this.onErrorCallback = callback;
+    this.onErrorCallbacks.push(callback);
   }
 
   getState(): PythonManagerState {
@@ -80,7 +81,7 @@ export class PythonManager {
         this.state.pythonPath = embeddedPath;
         this.state.isEmbedded = true;
       } else {
-        this.onErrorCallback?.("未找到 Python 3.10+ 环境");
+        for (const cb of this.onErrorCallbacks) cb("未找到 Python 3.10+ 环境");
         return;
       }
     } else {
@@ -105,11 +106,16 @@ export class PythonManager {
 
   private async spawnBackend(): Promise<void> {
     const backendScript = this.getBackendScriptPath();
+    const isProd = !process.env.NODE_ENV || process.env.NODE_ENV === "production";
+    const cwd = isProd
+      ? path.join(process.resourcesPath, "backend")
+      : path.join(__dirname, "../../../backend");
 
     return new Promise((resolve, reject) => {
       const proc = spawn(this.state.pythonPath, [backendScript], {
         stdio: ["pipe", "pipe", "pipe"],
-        env: { ...process.env },
+        env: { ...process.env, PYTHONPATH: cwd },
+        cwd,
       });
 
       this.state.process = proc;
@@ -129,19 +135,21 @@ export class PythonManager {
             this.waitForHealthCheck().then(() => {
               this.state.ready = true;
               this.restartCount = 0;
-              this.onReadyCallback?.(this.state.port!);
-              resolve();
+              (async () => {
+                for (const cb of this.onReadyCallbacks) await cb(this.state.port!);
+                resolve();
+              })();
             });
           }
         }
       });
 
       proc.stderr?.on("data", (data: Buffer) => {
-        console.error(`[Python stderr] ${data.toString()}`);
+        log.error(`[Python stderr] ${data.toString()}`);
       });
 
       proc.on("error", (err) => {
-        this.onErrorCallback?.(`Python 进程启动失败: ${err.message}`);
+        for (const cb of this.onErrorCallbacks) cb(`Python 进程启动失败: ${err.message}`);
         reject(err);
       });
 
@@ -149,14 +157,14 @@ export class PythonManager {
         this.state.ready = false;
         this.state.process = null;
         if (!portFound) {
-          this.onErrorCallback?.(`Python 进程退出，代码: ${code}`);
+          for (const cb of this.onErrorCallbacks) cb(`Python 进程退出，代码: ${code}`);
           reject(new Error(`Python exited with code ${code}`));
         } else if (this.restartCount < MAX_RESTARTS) {
           this.restartCount++;
-          console.log(`Python backend crashed, restarting (${this.restartCount}/${MAX_RESTARTS})...`);
+          log.warn(`Python backend crashed, restarting (${this.restartCount}/${MAX_RESTARTS})...`);
           this.spawnBackend();
         } else {
-          this.onErrorCallback?.("Python 后端多次崩溃，已停止重启");
+          for (const cb of this.onErrorCallbacks) cb("Python 后端多次崩溃，已停止重启");
         }
       });
     });

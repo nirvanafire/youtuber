@@ -1,6 +1,7 @@
 import axios from "axios";
 
 let _port: number | null = null;
+let _portPromise: Promise<number | null> | null = null;
 
 export function setBackendPort(port: number) {
   _port = port;
@@ -12,11 +13,20 @@ export function getBackendPort(): number {
 }
 
 const client = axios.create({
-  baseURL: `http://127.0.0.1:${_port}`,
   timeout: 30000,
 });
 
-client.interceptors.request.use((config) => {
+client.interceptors.request.use(async (config) => {
+  if (!_port) {
+    // Fallback: fetch port directly from main process if event was missed
+    if (!_portPromise && window.electronAPI) {
+      _portPromise = window.electronAPI.getBackendPort();
+    }
+    if (_portPromise) {
+      const port = await _portPromise;
+      if (port) _port = port;
+    }
+  }
   if (_port) {
     config.baseURL = `http://127.0.0.1:${_port}`;
   }

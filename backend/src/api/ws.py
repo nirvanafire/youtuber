@@ -8,21 +8,26 @@ router = APIRouter()
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    # Register this WebSocket as a progress listener
     tracker = websocket.app.state.progress_tracker
 
-    async def send_progress(task_id: str, progress: DownloadProgress):
+    async def send_update(task_id: str, data, extra: dict | None = None):
         try:
-            await websocket.send_json({
-                "task_id": task_id,
-                "progress": progress.model_dump(),
-            })
+            if isinstance(data, DownloadProgress):
+                await websocket.send_json({
+                    "task_id": task_id,
+                    "progress": data.model_dump(),
+                })
+            else:
+                msg = {"task_id": task_id, "status": data}
+                if extra:
+                    msg.update(extra)
+                await websocket.send_json(msg)
         except Exception:
             pass
 
-    tracker.register(send_progress)
+    tracker.register(send_update)
     try:
         while True:
             await websocket.receive_text()
     except WebSocketDisconnect:
-        tracker.unregister(send_progress)
+        tracker.unregister(send_update)

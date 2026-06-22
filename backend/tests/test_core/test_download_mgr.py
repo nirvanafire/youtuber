@@ -8,7 +8,7 @@ from src.models.download import DownloadStatus
 class TestDownloadManager:
     @pytest.fixture
     def mgr(self):
-        return DownloadManager(max_concurrent=2)
+        return DownloadManager(max_concurrent=2, auto_schedule=False)
 
     def test_add_task(self, mgr):
         task = mgr.add_task(
@@ -91,7 +91,7 @@ class TestDownloadManager:
 class TestDownloadManagerExecution:
     @pytest.fixture
     def mgr(self):
-        return DownloadManager(max_concurrent=2)
+        return DownloadManager(max_concurrent=2, auto_schedule=False)
 
     @pytest.mark.asyncio
     async def test_execute_download_calls_ytdl(self, mgr):
@@ -155,3 +155,52 @@ class TestDownloadManagerExecution:
             updated = mgr.get_task(task.id)
             assert updated.status == DownloadStatus.FAILED
             assert "Network error" in updated.error
+
+    @pytest.mark.asyncio
+    async def test_cancel_interrupts_download(self, mgr):
+        from src.core.progress import ProgressTracker
+        from src.core.ytdl_wrapper import DownloadInterrupted
+        tracker = ProgressTracker()
+        mgr.set_progress_tracker(tracker)
+
+        with patch("src.core.download_mgr.YtdlWrapper") as MockWrapper:
+            mock_instance = MagicMock()
+            mock_instance.download.side_effect = DownloadInterrupted("cancelled")
+            MockWrapper.return_value = mock_instance
+
+            task = mgr.add_task(
+                url="https://youtube.com/watch?v=test",
+                video_id="test",
+                title="Test",
+                format_id="22",
+            )
+            mgr.cancel_task(task.id)
+            await mgr.execute_task(task.id)
+            updated = mgr.get_task(task.id)
+            assert updated.status == DownloadStatus.CANCELLED
+
+    @pytest.mark.asyncio
+    async def test_pause_interrupts_download(self, mgr):
+        from src.core.progress import ProgressTracker
+        from src.core.ytdl_wrapper import DownloadInterrupted
+        tracker = ProgressTracker()
+        mgr.set_progress_tracker(tracker)
+
+        with patch("src.core.download_mgr.YtdlWrapper") as MockWrapper:
+            mock_instance = MagicMock()
+            mock_instance.download.side_effect = DownloadInterrupted("paused")
+            MockWrapper.return_value = mock_instance
+
+            task = mgr.add_task(
+                url="https://youtube.com/watch?v=test",
+                video_id="test",
+                title="Test",
+                format_id="22",
+            )
+            # Simulate task is downloading
+            task.status = DownloadStatus.DOWNLOADING
+            mgr._active_tasks.add(task.id)
+            mgr.pause_task(task.id)
+            await mgr.execute_task(task.id)
+            updated = mgr.get_task(task.id)
+            assert updated.status == DownloadStatus.PAUSED

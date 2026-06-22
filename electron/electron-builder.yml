@@ -6,7 +6,6 @@ directories:
 files:
   - dist/main/**/*
   - src/renderer/dist/**/*
-  - "!node_modules/**/*"
 extraResources:
   - from: "../backend/dist/youtuber-backend"
     to: "backend/youtuber-backend"
