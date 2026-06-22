@@ -1,9 +1,9 @@
 import logging
 import math
 import os
-import shutil
 from collections.abc import Callable
 
+import imageio_ffmpeg
 import yt_dlp
 from src.models.video import VideoInfo, FormatInfo, SubtitleInfo
 from src.models.playlist import PlaylistInfo, PlaylistVideoItem
@@ -20,8 +20,10 @@ class YtdlWrapper:
         self._proxy = proxy
 
     def _base_opts(self) -> dict:
-        # NOTE: quiet/no_warnings set to False for diagnostics — restore after investigation
-        opts = {"quiet": False, "no_warnings": False, "skip_download": True}
+        opts = {"quiet": True, "no_warnings": True, "skip_download": True}
+        ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
+        if ffmpeg_path:
+            opts["ffmpeg_location"] = os.path.dirname(ffmpeg_path)
         if self._proxy:
             opts["proxy"] = self._proxy
         return opts
@@ -173,17 +175,11 @@ class YtdlWrapper:
         logger.info(f"download: url={url}, format_id={format_id}, output_dir={output_dir}, subtitle_lang={subtitle_lang}")
         opts = self._base_opts()
 
-        has_ffmpeg = shutil.which("ffmpeg") is not None
         if format_id.startswith("subtitle:"):
             opts["format"] = "best"
-        elif has_ffmpeg:
-            # Merge selected video format with best audio
+        else:
             opts["format"] = f"{format_id}+bestaudio/best"
             opts["merge_output_format"] = "mp4"
-        else:
-            # No ffmpeg: fall back to best single format (has audio built-in)
-            logger.warning("ffmpeg not found, falling back to 'best' format (audio+video combined)")
-            opts["format"] = "best"
 
         opts["outtmpl"] = os.path.join(output_dir, "%(title)s.%(ext)s")
         opts.pop("skip_download", None)
